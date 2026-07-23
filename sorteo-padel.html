@@ -702,6 +702,7 @@ function init() {
   const saved = localStorage.getItem(STORAGE_KEY);
   if (saved) { try { jugadores = JSON.parse(saved); } catch(e) { jugadores = []; } }
   renderJugadores();
+  cargarForzadas();
   const inp = document.getElementById('inputNombre');
   inp.addEventListener('keydown', e => { if (e.key === 'Enter') agregarJugador(); });
   inp.addEventListener('input', e => { e.target.value = e.target.value.toUpperCase(); });
@@ -724,7 +725,18 @@ function eliminarJugador(id) {
   jugadores = jugadores.filter(j => j.id !== id);
   guardar(); renderJugadores();
 }
-function guardar() { localStorage.setItem(STORAGE_KEY, JSON.stringify(jugadores)); }
+function guardar() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(jugadores));
+}
+function guardarForzadas() {
+  localStorage.setItem('padel_forzadas_v1', JSON.stringify(parejasForzadas));
+}
+function cargarForzadas() {
+  try {
+    const saved = localStorage.getItem('padel_forzadas_v1');
+    if (saved) parejasForzadas = JSON.parse(saved);
+  } catch(e) { parejasForzadas = []; }
+}
 function renderJugadores() {
   const lista = document.getElementById('listaJugadores');
   const badge = document.getElementById('countBadge');
@@ -979,7 +991,7 @@ function volverInicio() {
 function limpiarTodo() {
   if (!confirm('¿LIMPIAR TODA LA LISTA?')) return;
   stopIntervals();
-  jugadores = []; parejasForzadas = []; guardar(); renderJugadores();
+  jugadores = []; parejasForzadas = []; guardar(); guardarForzadas(); renderJugadores();
 }
 
 // ── Helpers ──
@@ -1045,7 +1057,17 @@ function cerrarPanelManual() {
 function renderPanelManual() {
   const container = document.getElementById('pmParejas');
   container.innerHTML = '';
-  // Empieza vacío — el usuario agrega solo las parejas que quiere forzar
+  // Mostrar las parejas forzadas guardadas
+  parejasForzadas.forEach((par, i) => {
+    const fila = crearFilaPareja(i);
+    container.appendChild(fila);
+    setTimeout(() => {
+      const selA = document.getElementById(`pmA${i}`);
+      const selB = document.getElementById(`pmB${i}`);
+      if (selA) selA.value = par[0].id;
+      if (selB) selB.value = par[1].id;
+    }, 0);
+  });
 }
 
 function crearFilaPareja(idx) {
@@ -1079,6 +1101,23 @@ function eliminarParejaManual(btn) {
     el.querySelector('select:last-of-type').id = `pmB${i}`;
     el.querySelector('.pm-pareja-label span').textContent = `Pareja forzada ${i + 1}`;
   });
+  // Guardar el estado actual sin la eliminada
+  _sincronizarYGuardarForzadas();
+}
+function _sincronizarYGuardarForzadas() {
+  const filas = document.querySelectorAll('.pm-pareja');
+  const nuevas = [];
+  filas.forEach(fila => {
+    const idA = parseInt(fila.querySelector('select:first-of-type')?.value);
+    const idB = parseInt(fila.querySelector('select:last-of-type')?.value);
+    if (idA && idB && idA !== idB) {
+      const jA = jugadores.find(j => j.id === idA);
+      const jB = jugadores.find(j => j.id === idB);
+      if (jA && jB) nuevas.push([jA, jB]);
+    }
+  });
+  parejasForzadas = nuevas;
+  guardarForzadas();
 }
 
 function agregarParejaManual() {
@@ -1124,6 +1163,7 @@ function confirmarManual() {
 
   // Guardar solo las forzadas, volver a inicio
   parejasForzadas = parejas;
+  guardarForzadas();
   cerrarPanelManual();
 
   // Feedback visual sutil: badge naranja en el logo
