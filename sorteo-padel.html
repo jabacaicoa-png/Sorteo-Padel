@@ -477,6 +477,88 @@
 
   .add-bar-limpiar { margin-top: 8px; }
   .add-bar-limpiar .btn-limpiar { width: 100%; }
+
+  /* ── PANEL MANUAL OCULTO ── */
+  #panelManual {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(10,4,0,0.96);
+    backdrop-filter: blur(10px);
+    z-index: 90;
+    flex-direction: column;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  #panelManual.show { display: flex; }
+
+  .pm-header {
+    padding: 20px 16px 10px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid rgba(255,107,26,0.2);
+    flex-shrink: 0;
+  }
+  .pm-titulo {
+    font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.6);
+    text-transform: uppercase; letter-spacing: 2px;
+  }
+  .pm-cerrar {
+    background: none; border: none; color: rgba(255,255,255,0.5);
+    font-size: 22px; cursor: pointer; padding: 4px 8px;
+  }
+
+  .pm-body { padding: 16px; flex: 1; }
+
+  .pm-instruccion {
+    font-size: 12px; color: rgba(255,255,255,0.5); text-align: center;
+    text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px;
+  }
+
+  .pm-parejas { display: flex; flex-direction: column; gap: 12px; }
+
+  .pm-pareja {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,107,26,0.2);
+    border-radius: 14px; padding: 12px 14px;
+  }
+  .pm-pareja-label {
+    font-size: 10px; font-weight: 700; color: var(--naranja);
+    text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px;
+  }
+  .pm-pareja-slots {
+    display: flex; gap: 8px; align-items: center;
+  }
+  .pm-select {
+    flex: 1; background: rgba(0,0,0,0.4); border: 1.5px solid rgba(255,255,255,0.15);
+    border-radius: 9px; color: #fff; font-size: 14px; font-weight: 700;
+    font-family: 'Inter', sans-serif; padding: 10px 12px; outline: none;
+    text-transform: uppercase; appearance: none; -webkit-appearance: none;
+    cursor: pointer;
+  }
+  .pm-select:focus { border-color: var(--naranja); }
+  .pm-plus { font-size: 18px; font-weight: 900; color: rgba(255,255,255,0.4); flex-shrink: 0; }
+
+  .pm-footer { padding: 12px 16px 32px; flex-shrink: 0; display: flex; flex-direction: column; gap: 8px; }
+  .pm-agregar-pareja {
+    width: 100%; padding: 12px; background: transparent;
+    border: 1.5px dashed rgba(255,107,26,0.4); border-radius: 11px;
+    color: var(--naranja); font-family: 'Inter', sans-serif; font-size: 13px;
+    font-weight: 700; text-transform: uppercase; letter-spacing: 1px; cursor: pointer;
+  }
+  .pm-sortear {
+    width: 100%; padding: 15px; background: var(--naranja); color: #fff; border: none;
+    border-radius: 12px; font-size: 16px; font-weight: 900; font-family: 'Inter', sans-serif;
+    cursor: pointer; text-transform: uppercase; letter-spacing: 2px;
+    box-shadow: 0 4px 20px rgba(255,107,26,0.35);
+  }
+
+  /* Feedback de toques en el logo */
+  .logo-tap { animation: tapFlash 0.2s ease; }
+  @keyframes tapFlash {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.3); filter: brightness(2); }
+    100% { transform: scale(1); }
+  }
 </style>
 
 <script>
@@ -576,6 +658,22 @@
   <button class="modal-cancelar" onclick="cerrarModalModo()">Cancelar</button>
 </div>
 
+
+<!-- ══ PANEL MANUAL OCULTO ══ -->
+<div id="panelManual">
+  <div class="pm-header">
+    <div class="pm-titulo">🔒 Modo Manual</div>
+    <button class="pm-cerrar" onclick="cerrarPanelManual()">×</button>
+  </div>
+  <div class="pm-body">
+    <div class="pm-instruccion">Elegí quién va con quién</div>
+    <div class="pm-parejas" id="pmParejas"></div>
+  </div>
+  <div class="pm-footer">
+    <button class="pm-agregar-pareja" onclick="agregarParejaManual()">+ Agregar pareja</button>
+    <button class="pm-sortear" onclick="confirmarManual()">✅ Confirmar parejas</button>
+  </div>
+</div>
 <!-- ══ PANTALLA SORTEO ══ -->
 <div id="pantallaSorteo">
   <div class="sorteo-feed">
@@ -884,6 +982,134 @@ function shuffle(arr) {
 function h(str) { return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 init();
+initLogoTap();
+
+// ── PANEL MANUAL: 3 toques en el logo ──
+let logoTaps = 0;
+let logoTimer = null;
+
+function initLogoTap() {
+  const logo = document.querySelector('.logo');
+  if (!logo) return;
+  logo.style.cursor = 'pointer';
+  logo.addEventListener('click', () => {
+    logo.classList.remove('logo-tap');
+    void logo.offsetWidth; // reflow para reiniciar animación
+    logo.classList.add('logo-tap');
+
+    logoTaps++;
+    clearTimeout(logoTimer);
+
+    if (logoTaps >= 3) {
+      logoTaps = 0;
+      abrirPanelManual();
+      return;
+    }
+
+    logoTimer = setTimeout(() => { logoTaps = 0; }, 1000);
+  });
+}
+
+function abrirPanelManual() {
+  if (jugadores.length < 2) {
+    mostrarError('Necesitás al menos 2 jugadores.');
+    return;
+  }
+  if (jugadores.length % 2 !== 0) {
+    mostrarError('Necesitás un número par de jugadores.');
+    return;
+  }
+
+  renderPanelManual();
+  document.getElementById('panelManual').classList.add('show');
+}
+
+function cerrarPanelManual() {
+  document.getElementById('panelManual').classList.remove('show');
+}
+
+function renderPanelManual() {
+  const n = jugadores.length / 2;
+  const container = document.getElementById('pmParejas');
+  container.innerHTML = '';
+  for (let i = 0; i < n; i++) {
+    container.appendChild(crearFilaPareja(i));
+  }
+}
+
+function crearFilaPareja(idx) {
+  const div = document.createElement('div');
+  div.className = 'pm-pareja';
+  div.id = `pmPareja${idx}`;
+
+  const opts = jugadores.map(j => `<option value="${j.id}">${h(j.nombre)} (${lp(j.pos)})</option>`).join('');
+
+  div.innerHTML = `
+    <div class="pm-pareja-label">Pareja ${idx + 1}</div>
+    <div class="pm-pareja-slots">
+      <select class="pm-select" id="pmA${idx}">${opts}</select>
+      <div class="pm-plus">+</div>
+      <select class="pm-select" id="pmB${idx}">${opts}</select>
+    </div>
+  `;
+
+  // Preseleccionar por defecto distintos jugadores
+  setTimeout(() => {
+    const selA = document.getElementById(`pmA${idx}`);
+    const selB = document.getElementById(`pmB${idx}`);
+    if (selA && jugadores[idx * 2]) selA.value = jugadores[idx * 2].id;
+    if (selB && jugadores[idx * 2 + 1]) selB.value = jugadores[idx * 2 + 1].id;
+  }, 0);
+
+  return div;
+}
+
+function agregarParejaManual() {
+  const n = document.getElementById('pmParejas').children.length;
+  document.getElementById('pmParejas').appendChild(crearFilaPareja(n));
+}
+
+function confirmarManual() {
+  const n = document.getElementById('pmParejas').children.length;
+  const parejas = [];
+  const usados = new Set();
+  let error = false;
+
+  for (let i = 0; i < n; i++) {
+    const idA = parseInt(document.getElementById(`pmA${i}`)?.value);
+    const idB = parseInt(document.getElementById(`pmB${i}`)?.value);
+
+    if (!idA || !idB || idA === idB) {
+      alert(`PAREJA ${i + 1}: LOS DOS JUGADORES DEBEN SER DISTINTOS.`);
+      error = true; break;
+    }
+    if (usados.has(idA) || usados.has(idB)) {
+      alert(`UN JUGADOR ESTÁ REPETIDO EN VARIAS PAREJAS.`);
+      error = true; break;
+    }
+    usados.add(idA); usados.add(idB);
+
+    const jA = jugadores.find(j => j.id === idA);
+    const jB = jugadores.find(j => j.id === idB);
+    parejas.push([jA, jB]);
+  }
+
+  if (error) return;
+
+  cerrarPanelManual();
+  parejasFinales = parejas;
+
+  document.getElementById('feedCards').innerHTML = '';
+  document.getElementById('feedFooter').classList.remove('show');
+  document.getElementById('feedDots').innerHTML = parejas.map((_, i) => `<div class="feed-dot" id="fdot${i}"></div>`).join('');
+
+  document.getElementById('pantallaInicio').style.display = 'none';
+  document.getElementById('pantallaSorteo').classList.add('show');
+  document.getElementById('pantallaSorteo').scrollTop = 0;
+
+  animarFeed(0);
+}
+
 </script>
 </body>
 </html>
