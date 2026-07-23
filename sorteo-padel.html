@@ -1155,13 +1155,7 @@ function confirmarManual() {
 
   if (error) return;
 
-  // 2. Sortear los jugadores restantes aleatoriamente
-  const restantes = shuffle(jugadores.filter(j => !usados.has(j.id)));
-  for (let i = 0; i < restantes.length; i += 2) {
-    parejas.push([restantes[i], restantes[i + 1]]);
-  }
-
-  // Guardar solo las forzadas, volver a inicio
+  // Guardar SOLO las parejas que cargó el usuario en el panel
   parejasForzadas = parejas;
   guardarForzadas();
   cerrarPanelManual();
