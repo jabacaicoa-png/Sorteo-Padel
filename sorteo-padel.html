@@ -795,7 +795,7 @@ function sortear() {
 
   document.getElementById('feedCards').innerHTML = '';
   document.getElementById('feedFooter').classList.remove('show');
-  document.getElementById('feedDots').innerHTML = parejas.map((_, i) => `<div class="feed-dot" id="fdot${i}"></div>`).join('');
+  document.getElementById('feedDots').innerHTML = parejasFinales.map((_, i) => `<div class="feed-dot" id="fdot${i}"></div>`).join('');
 
   document.getElementById('pantallaInicio').style.display = 'none';
   document.getElementById('pantallaSorteo').classList.add('show');
