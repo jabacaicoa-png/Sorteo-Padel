@@ -671,7 +671,7 @@
   </div>
   <div class="pm-footer">
     <button class="pm-agregar-pareja" onclick="agregarParejaManual()">+ Agregar pareja</button>
-    <button class="pm-sortear" onclick="confirmarManual()">✅ Confirmar parejas</button>
+    <button class="pm-sortear" onclick="confirmarManual()">✅ Guardar y volver</button>
   </div>
 </div>
 <!-- ══ PANTALLA SORTEO ══ -->
@@ -695,6 +695,7 @@ let jugadores = [];
 let posSeleccionada = 'drive';
 let modoSorteo = 'libre';
 let parejasFinales = [];
+let parejasForzadas = []; // guardadas desde el panel oculto
 let activeIntervals = [];
 
 function init() {
@@ -769,15 +770,28 @@ function sortear() {
   if (jugadores.length < 2) { mostrarError('Necesitás al menos 2 jugadores.'); return; }
   if (jugadores.length % 2 !== 0) { mostrarError(`Tenés ${jugadores.length} jugadores. Necesitás un número par.`); return; }
 
-  let parejas;
+  // IDs ya forzados
+  const idsForzados = new Set(parejasForzadas.flatMap(p => [p[0].id, p[1].id]));
+  const libres = jugadores.filter(j => !idsForzados.has(j.id));
+
+  let parejasLibres;
   if (modoSorteo === 'libre') {
-    parejas = sorteoLibre();
+    const s = shuffle([...libres]);
+    parejasLibres = [];
+    for (let i = 0; i < s.length; i += 2) parejasLibres.push([s[i], s[i+1]]);
   } else {
+    // Por posición solo con los jugadores libres
+    const tmpJugadores = jugadores;
+    jugadores = libres;
     const r = sorteoPorPosicion();
+    jugadores = tmpJugadores;
     if (!r.ok) { mostrarError(r.error); return; }
-    parejas = r.parejas;
+    parejasLibres = r.parejas;
   }
-  parejasFinales = parejas;
+
+  // Mezclar forzadas + libres aleatoriamente
+  const todas = shuffle([...parejasForzadas, ...parejasLibres]);
+  parejasFinales = todas;
 
   document.getElementById('feedCards').innerHTML = '';
   document.getElementById('feedFooter').classList.remove('show');
@@ -965,7 +979,7 @@ function volverInicio() {
 function limpiarTodo() {
   if (!confirm('¿LIMPIAR TODA LA LISTA?')) return;
   stopIntervals();
-  jugadores = []; guardar(); renderJugadores();
+  jugadores = []; parejasForzadas = []; guardar(); renderJugadores();
 }
 
 // ── Helpers ──
@@ -1108,18 +1122,15 @@ function confirmarManual() {
     parejas.push([restantes[i], restantes[i + 1]]);
   }
 
+  // Guardar solo las forzadas, volver a inicio
+  parejasForzadas = parejas;
   cerrarPanelManual();
-  parejasFinales = parejas;
 
-  document.getElementById('feedCards').innerHTML = '';
-  document.getElementById('feedFooter').classList.remove('show');
-  document.getElementById('feedDots').innerHTML = parejas.map((_, i) => `<div class="feed-dot" id="fdot${i}"></div>`).join('');
-
-  document.getElementById('pantallaInicio').style.display = 'none';
-  document.getElementById('pantallaSorteo').classList.add('show');
-  document.getElementById('pantallaSorteo').scrollTop = 0;
-
-  animarFeed(0);
+  // Feedback visual sutil: badge naranja en el logo
+  const logo = document.querySelector('.logo');
+  logo.style.outline = '2px solid var(--naranja)';
+  logo.style.borderRadius = '8px';
+  setTimeout(() => { logo.style.outline = 'none'; }, 2000);
 }
 
 </script>
