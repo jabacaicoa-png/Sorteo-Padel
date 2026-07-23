@@ -666,7 +666,7 @@
     <button class="pm-cerrar" onclick="cerrarPanelManual()">×</button>
   </div>
   <div class="pm-body">
-    <div class="pm-instruccion">Elegí quién va con quién</div>
+    <div class="pm-instruccion">Agregá solo las parejas que querés forzar</div>
     <div class="pm-parejas" id="pmParejas"></div>
   </div>
   <div class="pm-footer">
@@ -1029,12 +1029,9 @@ function cerrarPanelManual() {
 }
 
 function renderPanelManual() {
-  const n = jugadores.length / 2;
   const container = document.getElementById('pmParejas');
   container.innerHTML = '';
-  for (let i = 0; i < n; i++) {
-    container.appendChild(crearFilaPareja(i));
-  }
+  // Empieza vacío — el usuario agrega solo las parejas que quiere forzar
 }
 
 function crearFilaPareja(idx) {
@@ -1042,26 +1039,32 @@ function crearFilaPareja(idx) {
   div.className = 'pm-pareja';
   div.id = `pmPareja${idx}`;
 
-  const opts = jugadores.map(j => `<option value="${j.id}">${h(j.nombre)} (${lp(j.pos)})</option>`).join('');
+  const opts = '<option value="">— Elegir —</option>' +
+    jugadores.map(j => `<option value="${j.id}">${h(j.nombre)} (${lp(j.pos)})</option>`).join('');
 
   div.innerHTML = `
-    <div class="pm-pareja-label">Pareja ${idx + 1}</div>
+    <div class="pm-pareja-label" style="display:flex;justify-content:space-between;align-items:center;">
+      <span>Pareja forzada ${idx + 1}</span>
+      <button onclick="eliminarParejaManual(this)" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:18px;cursor:pointer;padding:0 4px;">×</button>
+    </div>
     <div class="pm-pareja-slots">
       <select class="pm-select" id="pmA${idx}">${opts}</select>
       <div class="pm-plus">+</div>
       <select class="pm-select" id="pmB${idx}">${opts}</select>
     </div>
   `;
-
-  // Preseleccionar por defecto distintos jugadores
-  setTimeout(() => {
-    const selA = document.getElementById(`pmA${idx}`);
-    const selB = document.getElementById(`pmB${idx}`);
-    if (selA && jugadores[idx * 2]) selA.value = jugadores[idx * 2].id;
-    if (selB && jugadores[idx * 2 + 1]) selB.value = jugadores[idx * 2 + 1].id;
-  }, 0);
-
   return div;
+}
+
+function eliminarParejaManual(btn) {
+  btn.closest('.pm-pareja').remove();
+  // Renumerar
+  document.querySelectorAll('.pm-pareja').forEach((el, i) => {
+    el.id = `pmPareja${i}`;
+    el.querySelector('select:first-of-type').id = `pmA${i}`;
+    el.querySelector('select:last-of-type').id = `pmB${i}`;
+    el.querySelector('.pm-pareja-label span').textContent = `Pareja forzada ${i + 1}`;
+  });
 }
 
 function agregarParejaManual() {
@@ -1070,31 +1073,40 @@ function agregarParejaManual() {
 }
 
 function confirmarManual() {
-  const n = document.getElementById('pmParejas').children.length;
+  const filas = document.querySelectorAll('.pm-pareja');
   const parejas = [];
   const usados = new Set();
   let error = false;
 
-  for (let i = 0; i < n; i++) {
-    const idA = parseInt(document.getElementById(`pmA${i}`)?.value);
-    const idB = parseInt(document.getElementById(`pmB${i}`)?.value);
+  // 1. Procesar parejas forzadas
+  filas.forEach((fila, i) => {
+    if (error) return;
+    const idA = parseInt(fila.querySelector('select:first-of-type')?.value);
+    const idB = parseInt(fila.querySelector('select:last-of-type')?.value);
 
-    if (!idA || !idB || idA === idB) {
-      alert(`PAREJA ${i + 1}: LOS DOS JUGADORES DEBEN SER DISTINTOS.`);
-      error = true; break;
+    if (!idA || !idB) {
+      alert(`PAREJA FORZADA ${i + 1}: ELEGÍ LOS DOS JUGADORES.`);
+      error = true; return;
+    }
+    if (idA === idB) {
+      alert(`PAREJA FORZADA ${i + 1}: LOS DOS JUGADORES DEBEN SER DISTINTOS.`);
+      error = true; return;
     }
     if (usados.has(idA) || usados.has(idB)) {
       alert(`UN JUGADOR ESTÁ REPETIDO EN VARIAS PAREJAS.`);
-      error = true; break;
+      error = true; return;
     }
     usados.add(idA); usados.add(idB);
-
-    const jA = jugadores.find(j => j.id === idA);
-    const jB = jugadores.find(j => j.id === idB);
-    parejas.push([jA, jB]);
-  }
+    parejas.push([jugadores.find(j => j.id === idA), jugadores.find(j => j.id === idB)]);
+  });
 
   if (error) return;
+
+  // 2. Sortear los jugadores restantes aleatoriamente
+  const restantes = shuffle(jugadores.filter(j => !usados.has(j.id)));
+  for (let i = 0; i < restantes.length; i += 2) {
+    parejas.push([restantes[i], restantes[i + 1]]);
+  }
 
   cerrarPanelManual();
   parejasFinales = parejas;
