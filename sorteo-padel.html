@@ -1254,7 +1254,7 @@ function confirmarManual() {
       error = true; return;
     }
     if (usados.has(idA) || usados.has(idB)) {
-      alert(`UN JUGADOR ESTÁ REPETIDO EN VARIAS PAREJAS.`);
+      alert(`UN JUGADOR ESTÁ REPETIDO EN VARIAS PAREJAS FORZADAS.`);
       error = true; return;
     }
     usados.add(idA); usados.add(idB);
