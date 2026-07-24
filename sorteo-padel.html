@@ -806,10 +806,9 @@ function sortear() {
   if (modoSorteo === 'libre') {
     parejasLibres = sorteoLibreConProhibidas(libres);
   } else {
-    // Por posición solo con los jugadores libres
     const tmpJugadores = jugadores;
     jugadores = libres;
-    const r = sorteoPorPosicion();
+    const r = sorteoPorPosicionConProhibidas();
     jugadores = tmpJugadores;
     if (!r.ok) { mostrarError(r.error); return; }
     parejasLibres = r.parejas;
@@ -842,6 +841,18 @@ function esProhibida(jA, jB) {
     (p[0].id === jA.id && p[1].id === jB.id) ||
     (p[0].id === jB.id && p[1].id === jA.id)
   );
+}
+
+function sorteoPorPosicionConProhibidas() {
+  // Hasta 30 intentos para evitar prohibidas
+  for (let intento = 0; intento < 30; intento++) {
+    const r = sorteoPorPosicion();
+    if (!r.ok) return r;
+    const tieneProhibida = r.parejas.some(p => esProhibida(p[0], p[1]));
+    if (!tieneProhibida) return r;
+  }
+  // Si no encuentra solución sin prohibidas, usa lo que tenga
+  return sorteoPorPosicion();
 }
 
 function sorteoLibreConProhibidas(lista) {
