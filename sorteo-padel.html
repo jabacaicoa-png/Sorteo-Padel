@@ -669,8 +669,13 @@
     <div class="pm-instruccion">Agregá solo las parejas que querés forzar</div>
     <div class="pm-parejas" id="pmParejas"></div>
   </div>
+  <div class="pm-body" style="border-top: 1px solid rgba(255,71,87,0.2); margin-top: 0; padding-top: 14px;">
+    <div class="pm-instruccion" style="color: rgba(255,71,87,0.8);">🚫 Estos NO van juntos</div>
+    <div class="pm-parejas" id="pmProhibidas"></div>
+  </div>
   <div class="pm-footer">
-    <button class="pm-agregar-pareja" onclick="agregarParejaManual()">+ Agregar pareja</button>
+    <button class="pm-agregar-pareja" onclick="agregarParejaManual()">+ Pareja forzada</button>
+    <button class="pm-agregar-pareja" onclick="agregarProhibida()" style="border-color: rgba(255,71,87,0.4); color: #ff4757;">🚫 Agregar prohibida</button>
     <button class="pm-sortear" onclick="confirmarManual()">✅ Guardar y volver</button>
   </div>
 </div>
@@ -696,6 +701,7 @@ let posSeleccionada = 'drive';
 let modoSorteo = 'libre';
 let parejasFinales = [];
 let parejasForzadas = []; // guardadas desde el panel oculto
+let parejasProhibidas = []; // estos NO van juntos
 let activeIntervals = [];
 
 function init() {
@@ -703,6 +709,7 @@ function init() {
   if (saved) { try { jugadores = JSON.parse(saved); } catch(e) { jugadores = []; } }
   renderJugadores();
   cargarForzadas();
+  cargarProhibidas();
   const inp = document.getElementById('inputNombre');
   inp.addEventListener('keydown', e => { if (e.key === 'Enter') agregarJugador(); });
   inp.addEventListener('input', e => { e.target.value = e.target.value.toUpperCase(); });
@@ -736,6 +743,15 @@ function cargarForzadas() {
     const saved = localStorage.getItem('padel_forzadas_v1');
     if (saved) parejasForzadas = JSON.parse(saved);
   } catch(e) { parejasForzadas = []; }
+}
+function guardarProhibidas() {
+  localStorage.setItem('padel_prohibidas_v1', JSON.stringify(parejasProhibidas));
+}
+function cargarProhibidas() {
+  try {
+    const saved = localStorage.getItem('padel_prohibidas_v1');
+    if (saved) parejasProhibidas = JSON.parse(saved);
+  } catch(e) { parejasProhibidas = []; }
 }
 function renderJugadores() {
   const lista = document.getElementById('listaJugadores');
@@ -788,9 +804,7 @@ function sortear() {
 
   let parejasLibres;
   if (modoSorteo === 'libre') {
-    const s = shuffle([...libres]);
-    parejasLibres = [];
-    for (let i = 0; i < s.length; i += 2) parejasLibres.push([s[i], s[i+1]]);
+    parejasLibres = sorteoLibreConProhibidas(libres);
   } else {
     // Por posición solo con los jugadores libres
     const tmpJugadores = jugadores;
@@ -818,6 +832,32 @@ function sortear() {
 
 function sorteoLibre() {
   const s = shuffle([...jugadores]);
+  const p = [];
+  for (let i = 0; i < s.length; i += 2) p.push([s[i], s[i+1]]);
+  return p;
+}
+
+function esProhibida(jA, jB) {
+  return parejasProhibidas.some(p =>
+    (p[0].id === jA.id && p[1].id === jB.id) ||
+    (p[0].id === jB.id && p[1].id === jA.id)
+  );
+}
+
+function sorteoLibreConProhibidas(lista) {
+  // Intentar hasta 30 veces encontrar un sorteo sin parejas prohibidas
+  for (let intento = 0; intento < 30; intento++) {
+    const s = shuffle([...lista]);
+    const p = [];
+    let ok = true;
+    for (let i = 0; i < s.length; i += 2) {
+      if (esProhibida(s[i], s[i+1])) { ok = false; break; }
+      p.push([s[i], s[i+1]]);
+    }
+    if (ok) return p;
+  }
+  // Si no encuentra solución, sortea igual (caso extremo)
+  const s = shuffle([...lista]);
   const p = [];
   for (let i = 0; i < s.length; i += 2) p.push([s[i], s[i+1]]);
   return p;
@@ -991,7 +1031,7 @@ function volverInicio() {
 function limpiarTodo() {
   if (!confirm('¿LIMPIAR TODA LA LISTA?')) return;
   stopIntervals();
-  jugadores = []; parejasForzadas = []; guardar(); guardarForzadas(); renderJugadores();
+  jugadores = []; parejasForzadas = []; parejasProhibidas = []; guardar(); guardarForzadas(); guardarProhibidas(); renderJugadores();
 }
 
 // ── Helpers ──
@@ -1055,15 +1095,28 @@ function cerrarPanelManual() {
 }
 
 function renderPanelManual() {
+  // Forzadas
   const container = document.getElementById('pmParejas');
   container.innerHTML = '';
-  // Mostrar las parejas forzadas guardadas
   parejasForzadas.forEach((par, i) => {
     const fila = crearFilaPareja(i);
     container.appendChild(fila);
     setTimeout(() => {
       const selA = document.getElementById(`pmA${i}`);
       const selB = document.getElementById(`pmB${i}`);
+      if (selA) selA.value = par[0].id;
+      if (selB) selB.value = par[1].id;
+    }, 0);
+  });
+  // Prohibidas
+  const contProh = document.getElementById('pmProhibidas');
+  contProh.innerHTML = '';
+  parejasProhibidas.forEach((par, i) => {
+    const fila = crearFilaProhibida(i);
+    contProh.appendChild(fila);
+    setTimeout(() => {
+      const selA = document.getElementById(`ppA${i}`);
+      const selB = document.getElementById(`ppB${i}`);
       if (selA) selA.value = par[0].id;
       if (selB) selB.value = par[1].id;
     }, 0);
@@ -1125,6 +1178,61 @@ function agregarParejaManual() {
   document.getElementById('pmParejas').appendChild(crearFilaPareja(n));
 }
 
+function crearFilaProhibida(idx) {
+  const div = document.createElement('div');
+  div.className = 'pm-pareja';
+  div.id = `ppPareja${idx}`;
+  div.style.borderColor = 'rgba(255,71,87,0.3)';
+
+  const opts = '<option value="">— Elegir —</option>' +
+    jugadores.map(j => `<option value="${j.id}">${h(j.nombre)}</option>`).join('');
+
+  div.innerHTML = `
+    <div class="pm-pareja-label" style="display:flex;justify-content:space-between;align-items:center;color:#ff4757;">
+      <span>🚫 Prohibida ${idx + 1}</span>
+      <button onclick="eliminarProhibida(this)" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:18px;cursor:pointer;padding:0 4px;">×</button>
+    </div>
+    <div class="pm-pareja-slots">
+      <select class="pm-select" id="ppA${idx}" style="border-color:rgba(255,71,87,0.3);">${opts}</select>
+      <div class="pm-plus" style="color:#ff4757;">≠</div>
+      <select class="pm-select" id="ppB${idx}" style="border-color:rgba(255,71,87,0.3);">${opts}</select>
+    </div>
+  `;
+  return div;
+}
+
+function agregarProhibida() {
+  const n = document.getElementById('pmProhibidas').children.length;
+  document.getElementById('pmProhibidas').appendChild(crearFilaProhibida(n));
+}
+
+function eliminarProhibida(btn) {
+  btn.closest('.pm-pareja').remove();
+  document.querySelectorAll('#pmProhibidas .pm-pareja').forEach((el, i) => {
+    el.id = `ppPareja${i}`;
+    el.querySelector('select:first-of-type').id = `ppA${i}`;
+    el.querySelector('select:last-of-type').id = `ppB${i}`;
+    el.querySelector('.pm-pareja-label span').textContent = `🚫 Prohibida ${i + 1}`;
+  });
+  _sincronizarYGuardarProhibidas();
+}
+
+function _sincronizarYGuardarProhibidas() {
+  const filas = document.querySelectorAll('#pmProhibidas .pm-pareja');
+  const nuevas = [];
+  filas.forEach(fila => {
+    const idA = parseInt(fila.querySelector('select:first-of-type')?.value);
+    const idB = parseInt(fila.querySelector('select:last-of-type')?.value);
+    if (idA && idB && idA !== idB) {
+      const jA = jugadores.find(j => j.id === idA);
+      const jB = jugadores.find(j => j.id === idB);
+      if (jA && jB) nuevas.push([jA, jB]);
+    }
+  });
+  parejasProhibidas = nuevas;
+  guardarProhibidas();
+}
+
 function confirmarManual() {
   const filas = document.querySelectorAll('.pm-pareja');
   const parejas = [];
@@ -1155,9 +1263,13 @@ function confirmarManual() {
 
   if (error) return;
 
-  // Guardar SOLO las parejas que cargó el usuario en el panel
+  // Guardar SOLO las parejas forzadas que cargó el usuario
   parejasForzadas = parejas;
   guardarForzadas();
+
+  // Guardar prohibidas
+  _sincronizarYGuardarProhibidas();
+
   cerrarPanelManual();
 
   // Feedback visual sutil: badge naranja en el logo
