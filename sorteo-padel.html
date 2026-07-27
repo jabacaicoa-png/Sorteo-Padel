@@ -178,6 +178,7 @@
   .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; padding: 0 2px; }
   .section-header h2 { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.8); text-transform: uppercase; letter-spacing: 1.5px; }
   .count-badge { font-size: 32px; font-weight: 900; color: #fff; letter-spacing: -1px; line-height: 1; display: block; transition: color 0.3s; }
+  .count-badge.impar { color: #ef4444; }
   .count-badge.ok { color: var(--naranja); }
 
   .jugador-item {
@@ -771,7 +772,7 @@ function renderJugadores() {
   const lista = document.getElementById('listaJugadores');
   const badge = document.getElementById('countBadge');
   badge.textContent = jugadores.length;
-  badge.className = 'count-badge' + (jugadores.length > 0 && jugadores.length % 2 === 0 ? ' ok' : '');
+  badge.className = 'count-badge' + (jugadores.length > 0 && jugadores.length % 2 !== 0 ? ' impar' : '');
   if (jugadores.length === 0) {
     lista.innerHTML = '<div class="empty-state">Todavía no hay jugadores.<br>Agregá los del día arriba.</div>';
     return;
