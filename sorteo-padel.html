@@ -626,7 +626,7 @@
       <span>Armá las parejas del día</span>
     </div>
     <div style="text-align:center;flex-shrink:0;">
-      <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1.5px;">Jugadores</div>
+      <div id="jugadoresLabel" style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1.5px;">Jugadores</div>
       <div id="countBadge" class="count-badge">0</div>
     </div>
   </header>
@@ -1087,25 +1087,30 @@ function h(str) { return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(
 init();
 initLogoTap();
 
-// ── PANEL MANUAL: 3 toques en zona oculta ──
+// ── PANEL MANUAL: 3 toques en "JUGADORES" ──
 let zonaTaps = 0;
 let zonaTimer = null;
 
-function tapZonaOculta() {
-  zonaTaps++;
-  clearTimeout(zonaTimer);
-
-  if (zonaTaps >= 3) {
-    zonaTaps = 0;
-    abrirPanelManual();
-    return;
-  }
-
-  zonaTimer = setTimeout(() => { zonaTaps = 0; }, 1000);
+function initLogoTap() {
+  // Activar en el número Y en la palabra JUGADORES del header
+  ['countBadge', 'jugadoresLabel'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('click', () => {
+      zonaTaps++;
+      clearTimeout(zonaTimer);
+      if (zonaTaps >= 3) {
+        zonaTaps = 0;
+        abrirPanelManual();
+        return;
+      }
+      zonaTimer = setTimeout(() => { zonaTaps = 0; }, 1500);
+    });
+  });
 }
 
-function initLogoTap() {
-  // mantenido para compatibilidad, ya no hace nada
+function tapZonaOculta() {
+  // ya no se usa
 }
 
 function abrirPanelManual() {
