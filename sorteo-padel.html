@@ -571,6 +571,17 @@
     color: var(--naranja);
     text-shadow: 0 0 20px rgba(255,107,26,0.4);
   }
+
+  /* Zona tap oculta: parte inferior de la foto */
+  #zonaOculta {
+    position: fixed;
+    bottom: 140px; /* justo encima de la barra */
+    left: 0; right: 0;
+    height: 120px;
+    z-index: 5;
+    cursor: default;
+    -webkit-tap-highlight-color: transparent;
+  }
 </style>
 
 <script>
@@ -1076,30 +1087,25 @@ function h(str) { return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(
 init();
 initLogoTap();
 
-// ── PANEL MANUAL: 3 toques en el logo ──
-let logoTaps = 0;
-let logoTimer = null;
+// ── PANEL MANUAL: 3 toques en zona oculta ──
+let zonaTaps = 0;
+let zonaTimer = null;
+
+function tapZonaOculta() {
+  zonaTaps++;
+  clearTimeout(zonaTimer);
+
+  if (zonaTaps >= 3) {
+    zonaTaps = 0;
+    abrirPanelManual();
+    return;
+  }
+
+  zonaTimer = setTimeout(() => { zonaTaps = 0; }, 1000);
+}
 
 function initLogoTap() {
-  const logo = document.querySelector('.logo');
-  if (!logo) return;
-  logo.style.cursor = 'pointer';
-  logo.addEventListener('click', () => {
-    logo.classList.remove('logo-tap');
-    void logo.offsetWidth; // reflow para reiniciar animación
-    logo.classList.add('logo-tap');
-
-    logoTaps++;
-    clearTimeout(logoTimer);
-
-    if (logoTaps >= 3) {
-      logoTaps = 0;
-      abrirPanelManual();
-      return;
-    }
-
-    logoTimer = setTimeout(() => { logoTaps = 0; }, 1000);
-  });
+  // mantenido para compatibilidad, ya no hace nada
 }
 
 function abrirPanelManual() {
