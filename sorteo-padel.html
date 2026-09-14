@@ -818,6 +818,18 @@ function elegirModo(modo) {
   sortear();
 }
 
+// Guarda el resultado del sorteo en una clave compartida de localStorage
+// para que la app Torneo-Padel (mismo dominio) pueda importarlo.
+function guardarResultadoParaTorneo() {
+  try {
+    const parejasTexto = parejasFinales.map(p => `${p[0].nombre} / ${p[1].nombre}`);
+    localStorage.setItem('sorteo_padel_ultimo_resultado', JSON.stringify({
+      fecha: Date.now(),
+      parejas: parejasTexto
+    }));
+  } catch (e) { /* si falla, no interrumpe el sorteo */ }
+}
+
 function sortear() {
   ocultarError();
   stopIntervals();
@@ -923,6 +935,7 @@ function animarFeed(idx) {
   if (idx >= parejasFinales.length) {
     document.getElementById('feedFooter').classList.add('show');
     lanzarConfetti();
+    guardarResultadoParaTorneo();
     return;
   }
 
