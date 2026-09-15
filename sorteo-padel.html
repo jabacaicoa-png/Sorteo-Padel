@@ -808,7 +808,8 @@ function init() {
 }
 
 function seleccionarPos(btn) {
-  document.querySelectorAll('.add-bar-pos .pos-btn').forEach(b => b.className = 'pos-btn');
+  const barra = document.querySelector('.add-bar-pos');
+  if (barra) barra.querySelectorAll('.pos-btn').forEach(b => b.className = 'pos-btn');
   posSeleccionada = btn.dataset.pos;
   btn.classList.add('active-' + posSeleccionada);
 }
@@ -817,8 +818,11 @@ function agregarJugador() {
   const nombre = input.value.trim().toUpperCase();
   if (!nombre) { input.focus(); return; }
   jugadores.push({ id: Date.now(), nombre, pos: posSeleccionada });
-  guardar(); renderJugadores();
-  input.value = ''; input.focus(); ocultarError();
+  guardar();
+  renderJugadores();
+  input.value = '';
+  input.focus();
+  ocultarError();
 }
 function eliminarJugador(id) {
   jugadores = jugadores.filter(j => j.id !== id);
