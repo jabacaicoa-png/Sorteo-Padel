@@ -582,6 +582,57 @@
     cursor: default;
     -webkit-tap-highlight-color: transparent;
   }
+
+  /* ── MODAL EDICIÓN JUGADOR ── */
+  #modalEditar {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(10,4,0,0.88);
+    backdrop-filter: blur(10px);
+    z-index: 80;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  #modalEditar.show { display: flex; }
+
+  .edit-sheet {
+    background: var(--gris1);
+    border: 1px solid rgba(255,107,26,0.25);
+    border-radius: 20px;
+    padding: 24px 18px 20px;
+    width: 100%;
+    max-width: 400px;
+    animation: sheetUp 0.25s cubic-bezier(0.34,1.2,0.64,1) both;
+  }
+  @keyframes sheetUp {
+    from { transform: translateY(30px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+  }
+  .edit-titulo {
+    font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.5);
+    text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; text-align: center;
+  }
+  .edit-input {
+    width: 100%; background: rgba(0,0,0,0.35); border: 1.5px solid rgba(255,255,255,0.2);
+    border-radius: 10px; color: #fff; font-size: 18px; font-weight: 700;
+    font-family: 'Inter', sans-serif; padding: 12px 14px; outline: none;
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;
+    transition: border-color 0.15s;
+  }
+  .edit-input:focus { border-color: var(--naranja); }
+  .edit-pos-selector { display: flex; gap: 6px; margin-bottom: 16px; }
+  .edit-btn-ok {
+    width: 100%; padding: 14px; background: var(--naranja); color: #fff; border: none;
+    border-radius: 11px; font-size: 15px; font-weight: 900; font-family: 'Inter', sans-serif;
+    cursor: pointer; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;
+  }
+  .edit-btn-cancel {
+    width: 100%; padding: 11px; background: transparent; color: rgba(255,255,255,0.4);
+    border: none; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 1px; cursor: pointer;
+  }
 </style>
 
 <script>
@@ -705,6 +756,21 @@
     <button class="pm-sortear" onclick="confirmarManual()">✅ Guardar y volver</button>
   </div>
 </div>
+
+<!-- ══ MODAL EDITAR JUGADOR ══ -->
+<div id="modalEditar" onclick="cerrarEditar(event)">
+  <div class="edit-sheet">
+    <div class="edit-titulo">Editar jugador</div>
+    <input type="text" class="edit-input" id="editNombre" maxlength="15" autocomplete="off">
+    <div class="edit-pos-selector">
+      <button class="pos-btn active-drive" data-pos="drive" onclick="seleccionarPosEdit(this)">🎯 Drive</button>
+      <button class="pos-btn" data-pos="reves" onclick="seleccionarPosEdit(this)">🔄 Revés</button>
+      <button class="pos-btn" data-pos="indiferente" onclick="seleccionarPosEdit(this)">⚡ Ambos</button>
+    </div>
+    <button class="edit-btn-ok" onclick="guardarEdicion()">✅ Guardar</button>
+    <button class="edit-btn-cancel" onclick="cerrarEditar()">Cancelar</button>
+  </div>
+</div>
 <!-- ══ PANTALLA SORTEO ══ -->
 <div id="pantallaSorteo">
   <div class="sorteo-feed">
@@ -791,8 +857,8 @@ function renderJugadores() {
   lista.innerHTML = jugadores.map(j => `
     <div class="jugador-item">
       <div class="pos-dot ${j.pos}"></div>
-      <div class="jugador-nombre">${h(j.nombre)}</div>
-      <span class="pos-label ${j.pos}">${lp(j.pos)}</span>
+      <div class="jugador-nombre" onclick="abrirEditar(${j.id})" style="cursor:pointer;">${h(j.nombre)}</div>
+      <span class="pos-label ${j.pos}" onclick="abrirEditar(${j.id})" style="cursor:pointer;">${lp(j.pos)}</span>
       <button class="btn-del" onclick="eliminarJugador(${j.id})">×</button>
     </div>
   `).join('');
@@ -816,18 +882,6 @@ function elegirModo(modo) {
   document.getElementById('modalModo').classList.remove('show');
   modoSorteo = modo;
   sortear();
-}
-
-// Guarda el resultado del sorteo en una clave compartida de localStorage
-// para que la app Torneo-Padel (mismo dominio) pueda importarlo.
-function guardarResultadoParaTorneo() {
-  try {
-    const parejasTexto = parejasFinales.map(p => `${p[0].nombre} / ${p[1].nombre}`);
-    localStorage.setItem('sorteo_padel_ultimo_resultado', JSON.stringify({
-      fecha: Date.now(),
-      parejas: parejasTexto
-    }));
-  } catch (e) { /* si falla, no interrumpe el sorteo */ }
 }
 
 function sortear() {
@@ -935,7 +989,6 @@ function animarFeed(idx) {
   if (idx >= parejasFinales.length) {
     document.getElementById('feedFooter').classList.add('show');
     lanzarConfetti();
-    guardarResultadoParaTorneo();
     return;
   }
 
@@ -1096,6 +1149,51 @@ function shuffle(arr) {
   return arr;
 }
 function h(str) { return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+
+// ── EDITAR JUGADOR ──
+let editandoId = null;
+let posEditSeleccionada = 'drive';
+
+function abrirEditar(id) {
+  const j = jugadores.find(x => x.id === id);
+  if (!j) return;
+  editandoId = id;
+  posEditSeleccionada = j.pos;
+  document.getElementById('editNombre').value = j.nombre;
+  // Seleccionar posición
+  document.querySelectorAll('.edit-pos-selector .pos-btn').forEach(b => {
+    b.className = 'pos-btn';
+    if (b.dataset.pos === j.pos) b.classList.add('active-' + j.pos);
+  });
+  document.getElementById('modalEditar').classList.add('show');
+  setTimeout(() => const inp2 = document.getElementById('editNombre');
+    inp2.focus();
+    inp2.onkeydown = e => { if(e.key==='Enter') guardarEdicion(); };}, 100);
+}
+
+function cerrarEditar(e) {
+  if (!e || e.target === document.getElementById('modalEditar')) {
+    document.getElementById('modalEditar').classList.remove('show');
+    editandoId = null;
+  }
+}
+
+function seleccionarPosEdit(btn) {
+  document.querySelectorAll('.edit-pos-selector .pos-btn').forEach(b => b.className = 'pos-btn');
+  posEditSeleccionada = btn.dataset.pos;
+  btn.classList.add('active-' + posEditSeleccionada);
+}
+
+function guardarEdicion() {
+  const nombre = document.getElementById('editNombre').value.trim().toUpperCase();
+  if (!nombre) return;
+  jugadores = jugadores.map(j => j.id === editandoId ? { ...j, nombre, pos: posEditSeleccionada } : j);
+  guardar();
+  renderJugadores();
+  document.getElementById('modalEditar').classList.remove('show');
+  editandoId = null;
+}
 
 init();
 initLogoTap();
