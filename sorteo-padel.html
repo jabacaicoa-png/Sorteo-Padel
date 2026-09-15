@@ -2,14 +2,6 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Sorteo Pádel">
-<meta name="application-name" content="Sorteo Pádel">
-<meta name="theme-color" content="#1A0F0A">
-<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231A0F0A'/><ellipse cx='50' cy='38' rx='26' ry='30' fill='%23FF6B1A'/><ellipse cx='50' cy='38' rx='26' ry='30' fill='none' stroke='%23fff' stroke-width='3'/><circle cx='40' cy='28' r='3.5' fill='%231A0F0A'/><circle cx='55' cy='25' r='3.5' fill='%231A0F0A'/><circle cx='66' cy='33' r='3.5' fill='%231A0F0A'/><circle cx='34' cy='40' r='3.5' fill='%231A0F0A'/><circle cx='50' cy='38' r='3.5' fill='%231A0F0A'/><circle cx='64' cy='44' r='3.5' fill='%231A0F0A'/><circle cx='40' cy='50' r='3.5' fill='%231A0F0A'/><circle cx='55' cy='52' r='3.5' fill='%231A0F0A'/><rect x='46' y='66' width='8' height='22' rx='4' fill='%23FFD93D'/><rect x='46' y='63' width='8' height='8' rx='2' fill='%23FF6B1A'/></svg>">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231A0F0A'/><ellipse cx='50' cy='38' rx='26' ry='30' fill='%23FF6B1A'/><ellipse cx='50' cy='38' rx='26' ry='30' fill='none' stroke='%23fff' stroke-width='3'/><circle cx='40' cy='28' r='3.5' fill='%231A0F0A'/><circle cx='55' cy='25' r='3.5' fill='%231A0F0A'/><circle cx='66' cy='33' r='3.5' fill='%231A0F0A'/><circle cx='34' cy='40' r='3.5' fill='%231A0F0A'/><circle cx='50' cy='38' r='3.5' fill='%231A0F0A'/><circle cx='64' cy='44' r='3.5' fill='%231A0F0A'/><circle cx='40' cy='50' r='3.5' fill='%231A0F0A'/><circle cx='55' cy='52' r='3.5' fill='%231A0F0A'/><rect x='46' y='66' width='8' height='22' rx='4' fill='%23FFD93D'/><rect x='46' y='63' width='8' height='8' rx='2' fill='%23FF6B1A'/></svg>">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Sorteo Pádel</title>
 <style>
@@ -177,9 +169,8 @@
   .jugadores-section { margin-bottom: 16px; }
   .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; padding: 0 2px; }
   .section-header h2 { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.8); text-transform: uppercase; letter-spacing: 1.5px; }
-  .count-badge { font-size: 32px; font-weight: 900; color: #fff; letter-spacing: -1px; line-height: 1; display: block; transition: color 0.3s; }
-  .count-badge.impar { color: #ef4444; }
-  .count-badge.ok { color: var(--naranja); }
+  .count-badge { background: rgba(255,255,255,0.12); border-radius: 20px; padding: 3px 10px; font-size: 12px; font-weight: 700; color: #fff; text-transform: uppercase; }
+  .count-badge.ok { background: rgba(255,107,26,0.15); color: var(--naranja); }
 
   .jugador-item {
     background: transparent; border-radius: 11px; padding: 12px 14px; margin-bottom: 7px;
@@ -433,236 +424,37 @@
   /* Confetti */
   #confettiCanvas { position: fixed; inset: 0; pointer-events: none; z-index: 200; }
 
-  /* ── LAYOUT FIJO: header arriba, barra abajo, lista en el medio ── */
-  html, body { height: 100%; }
-
-  #pantallaInicio {
-    position: fixed !important;
-    inset: 0;
-    display: flex !important;
-    flex-direction: column;
-    overflow: hidden;
-  }
-
-  /* El header ya es sticky, ok */
-
-  /* Container: ocupa todo el espacio entre header y barra de abajo */
-  #pantallaInicio .container {
-    flex: 1;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    padding-bottom: 8px !important;
-    /* empuja hacia abajo exactamente el alto de la barra */
-    margin-bottom: 0;
-  }
-
-  /* Barra siempre al fondo */
-  .add-bar {
-    position: fixed !important;
-    bottom: 0; left: 0; right: 0;
-    z-index: 30;
-    flex-shrink: 0;
-  }
-
-  /* Botón sortear inline */
-  .btn-sortear-inline {
-    flex-shrink: 0;
-    width: 48px; height: 48px;
-    background: var(--naranja); color: #fff; border: none;
-    border-radius: 11px; font-size: 22px;
-    font-family: 'Inter', sans-serif; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    transition: background 0.15s;
-  }
-  .btn-sortear-inline:hover { background: var(--naranja-dark); }
-
-  .add-bar-limpiar { margin-top: 8px; }
-  .add-bar-limpiar .btn-limpiar { width: 100%; }
-
-  /* ── PANEL MANUAL OCULTO ── */
-  #panelManual {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(10,4,0,0.96);
-    backdrop-filter: blur(10px);
-    z-index: 90;
-    flex-direction: column;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-  #panelManual.show { display: flex; }
-
-  .pm-header {
-    padding: 20px 16px 10px;
-    display: flex; align-items: center; justify-content: space-between;
-    border-bottom: 1px solid rgba(255,107,26,0.2);
-    flex-shrink: 0;
-  }
-  .pm-titulo {
-    font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.6);
-    text-transform: uppercase; letter-spacing: 2px;
-  }
-  .pm-cerrar {
-    background: none; border: none; color: rgba(255,255,255,0.5);
-    font-size: 22px; cursor: pointer; padding: 4px 8px;
-  }
-
-  .pm-body { padding: 16px; flex: 1; }
-
-  .pm-instruccion {
-    font-size: 12px; color: rgba(255,255,255,0.5); text-align: center;
-    text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px;
-  }
-
-  .pm-parejas { display: flex; flex-direction: column; gap: 12px; }
-
-  .pm-pareja {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,107,26,0.2);
-    border-radius: 14px; padding: 12px 14px;
-  }
-  .pm-pareja-label {
-    font-size: 10px; font-weight: 700; color: var(--naranja);
-    text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px;
-  }
-  .pm-pareja-slots {
-    display: flex; gap: 8px; align-items: center;
-  }
-  .pm-select {
-    flex: 1; background: rgba(0,0,0,0.4); border: 1.5px solid rgba(255,255,255,0.15);
-    border-radius: 9px; color: #fff; font-size: 14px; font-weight: 700;
-    font-family: 'Inter', sans-serif; padding: 10px 12px; outline: none;
-    text-transform: uppercase; appearance: none; -webkit-appearance: none;
-    cursor: pointer;
-  }
-  .pm-select:focus { border-color: var(--naranja); }
-  .pm-plus { font-size: 18px; font-weight: 900; color: rgba(255,255,255,0.4); flex-shrink: 0; }
-
-  .pm-footer { padding: 12px 16px 32px; flex-shrink: 0; display: flex; flex-direction: column; gap: 8px; }
-  .pm-agregar-pareja {
-    width: 100%; padding: 12px; background: transparent;
-    border: 1.5px dashed rgba(255,107,26,0.4); border-radius: 11px;
-    color: var(--naranja); font-family: 'Inter', sans-serif; font-size: 13px;
-    font-weight: 700; text-transform: uppercase; letter-spacing: 1px; cursor: pointer;
-  }
-  .pm-sortear {
-    width: 100%; padding: 15px; background: var(--naranja); color: #fff; border: none;
-    border-radius: 12px; font-size: 16px; font-weight: 900; font-family: 'Inter', sans-serif;
-    cursor: pointer; text-transform: uppercase; letter-spacing: 2px;
-    box-shadow: 0 4px 20px rgba(255,107,26,0.35);
-  }
-
-  /* Feedback de toques en el logo */
-  .logo-tap { animation: tapFlash 0.2s ease; }
-  @keyframes tapFlash {
-    0%   { transform: scale(1); }
-    50%  { transform: scale(1.3); filter: brightness(2); }
-    100% { transform: scale(1); }
-  }
-
-  .count-badge-header {
-    font-size: 42px; font-weight: 900;
-    color: rgba(255,255,255,0.25);
-    letter-spacing: -2px; line-height: 1;
-    transition: color 0.3s;
-  }
-  .count-badge-header.ok {
-    color: var(--naranja);
-    text-shadow: 0 0 20px rgba(255,107,26,0.4);
-  }
-
-  /* Zona tap oculta: parte inferior de la foto */
-  #zonaOculta {
-    position: fixed;
-    bottom: 140px; /* justo encima de la barra */
-    left: 0; right: 0;
-    height: 120px;
-    z-index: 5;
-    cursor: default;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  /* ── MODAL EDICIÓN JUGADOR ── */
   #modalEditar {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(10,4,0,0.88);
-    backdrop-filter: blur(10px);
-    z-index: 80;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
+    display: none; position: fixed; inset: 0;
+    background: rgba(10,4,0,0.88); backdrop-filter: blur(10px);
+    z-index: 80; align-items: center; justify-content: center; padding: 20px;
   }
   #modalEditar.show { display: flex; }
-
   .edit-sheet {
-    background: var(--gris1);
-    border: 1px solid rgba(255,107,26,0.25);
-    border-radius: 20px;
-    padding: 24px 18px 20px;
-    width: 100%;
-    max-width: 400px;
-    animation: sheetUp 0.25s cubic-bezier(0.34,1.2,0.64,1) both;
+    background: #251710; border: 1px solid rgba(255,107,26,0.25);
+    border-radius: 20px; padding: 24px 18px 20px; width: 100%; max-width: 400px;
   }
-  @keyframes sheetUp {
-    from { transform: translateY(30px); opacity: 0; }
-    to   { transform: translateY(0);    opacity: 1; }
-  }
-  .edit-titulo {
-    font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.5);
-    text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; text-align: center;
-  }
-  .edit-input {
-    width: 100%; background: rgba(0,0,0,0.35); border: 1.5px solid rgba(255,255,255,0.2);
+  .edit-titulo { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.5);
+    text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; text-align: center; }
+  .edit-input { width: 100%; background: rgba(0,0,0,0.35); border: 1.5px solid rgba(255,255,255,0.2);
     border-radius: 10px; color: #fff; font-size: 18px; font-weight: 700;
-    font-family: 'Inter', sans-serif; padding: 12px 14px; outline: none;
-    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;
-    transition: border-color 0.15s;
-  }
-  .edit-input:focus { border-color: var(--naranja); }
-  .edit-pos-selector { display: flex; gap: 6px; margin-bottom: 16px; }
-  .edit-btn-ok {
-    width: 100%; padding: 14px; background: var(--naranja); color: #fff; border: none;
-    border-radius: 11px; font-size: 15px; font-weight: 900; font-family: 'Inter', sans-serif;
-    cursor: pointer; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;
-  }
-  .edit-btn-cancel {
-    width: 100%; padding: 11px; background: transparent; color: rgba(255,255,255,0.4);
-    border: none; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
-    text-transform: uppercase; letter-spacing: 1px; cursor: pointer;
-  }
+    font-family: Inter, sans-serif; padding: 12px 14px; outline: none;
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; box-sizing: border-box; }
+  .edit-input:focus { border-color: #FF6B1A; }
+  .edit-pos-row { display: flex; gap: 6px; margin-bottom: 16px; }
+  .edit-pos-btn { flex: 1; padding: 9px 4px; border-radius: 9px; border: 2px solid #4A3028;
+    background: transparent; color: #8A6A5A; font-size: 12px; font-weight: 700;
+    font-family: Inter, sans-serif; cursor: pointer; text-align: center; }
+  .edit-pos-btn.sel-drive { border-color: #FFD93D; background: rgba(255,217,61,0.15); color: #FFD93D; }
+  .edit-pos-btn.sel-reves { border-color: #FF6B1A; background: rgba(255,107,26,0.15); color: #FF6B1A; }
+  .edit-pos-btn.sel-indiferente { border-color: #FF9F43; background: rgba(255,159,67,0.15); color: #FF9F43; }
+  .edit-btn-ok { width: 100%; padding: 14px; background: #FF6B1A; color: #fff; border: none;
+    border-radius: 11px; font-size: 15px; font-weight: 900; font-family: Inter, sans-serif;
+    cursor: pointer; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .edit-btn-cancel { width: 100%; padding: 11px; background: transparent; color: rgba(255,255,255,0.4);
+    border: none; font-family: Inter, sans-serif; font-size: 13px; font-weight: 600;
+    text-transform: uppercase; cursor: pointer; }
 </style>
-
-<script>
-  // Registrar service worker básico para PWA
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      // inline manifest
-      const manifest = {
-        name: "Sorteo Pádel",
-        short_name: "Pádel",
-        start_url: window.location.href,
-        display: "standalone",
-        background_color: "#1A0F0A",
-        theme_color: "#FF6B1A",
-        orientation: "portrait",
-        icons: [{
-          src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231A0F0A'/><ellipse cx='50' cy='38' rx='26' ry='30' fill='%23FF6B1A'/><ellipse cx='50' cy='38' rx='26' ry='30' fill='none' stroke='%23fff' stroke-width='3'/><circle cx='40' cy='28' r='3.5' fill='%231A0F0A'/><circle cx='55' cy='25' r='3.5' fill='%231A0F0A'/><circle cx='66' cy='33' r='3.5' fill='%231A0F0A'/><circle cx='34' cy='40' r='3.5' fill='%231A0F0A'/><circle cx='50' cy='38' r='3.5' fill='%231A0F0A'/><circle cx='64' cy='44' r='3.5' fill='%231A0F0A'/><circle cx='40' cy='50' r='3.5' fill='%231A0F0A'/><circle cx='55' cy='52' r='3.5' fill='%231A0F0A'/><rect x='46' y='66' width='8' height='22' rx='4' fill='%23FFD93D'/><rect x='46' y='63' width='8' height='8' rx='2' fill='%23FF6B1A'/></svg>",
-          sizes: "192x192",
-          type: "image/svg+xml"
-        }]
-      };
-      const blob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('link');
-      link.rel = 'manifest';
-      link.href = url;
-      document.head.appendChild(link);
-    });
-  }
-</script>
 </head>
 <body>
 
@@ -671,14 +463,10 @@
 <!-- ══ PANTALLA INICIO ══ -->
 <div id="pantallaInicio">
   <header>
-    <div class="logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="36" height="36"><ellipse cx="50" cy="38" rx="26" ry="30" fill="#FF6B1A"/><ellipse cx="50" cy="38" rx="26" ry="30" fill="none" stroke="#fff" stroke-width="3"/><circle cx="40" cy="28" r="3.5" fill="#1A0F0A"/><circle cx="55" cy="25" r="3.5" fill="#1A0F0A"/><circle cx="66" cy="33" r="3.5" fill="#1A0F0A"/><circle cx="34" cy="40" r="3.5" fill="#1A0F0A"/><circle cx="50" cy="38" r="3.5" fill="#1A0F0A"/><circle cx="64" cy="44" r="3.5" fill="#1A0F0A"/><circle cx="40" cy="50" r="3.5" fill="#1A0F0A"/><circle cx="55" cy="52" r="3.5" fill="#1A0F0A"/><rect x="46" y="66" width="8" height="22" rx="4" fill="#FFD93D"/><rect x="46" y="63" width="8" height="8" rx="2" fill="#FF6B1A"/></svg></div>
-    <div style="flex:1">
+    <div class="logo">🎾</div>
+    <div>
       <h1>Sorteo Pádel</h1>
       <span>Armá las parejas del día</span>
-    </div>
-    <div style="text-align:center;flex-shrink:0;">
-      <div id="jugadoresLabel" style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1.5px;">Jugadores</div>
-      <div id="countBadge" class="count-badge">0</div>
     </div>
   </header>
 
@@ -686,13 +474,19 @@
     <div class="jugadores-section">
       <div class="section-header">
         <h2>Jugadores</h2>
+        <span class="count-badge" id="countBadge">0</span>
       </div>
       <div id="listaJugadores">
         <div class="empty-state">Todavía no hay jugadores.<br>Usá el formulario de abajo.</div>
       </div>
     </div>
 
-    <div class="error-msg" id="errorMsg" style="padding:0 4px;"></div>
+    <div class="sorteo-section">
+      <div class="error-msg" id="errorMsg"></div>
+      <button class="btn-sortear" onclick="abrirModalModo()">🎲 Sortear parejas</button>
+      <div class="divider"></div>
+      <button class="btn-limpiar" onclick="limpiarTodo()">Limpiar lista</button>
+    </div>
   </div>
 
   <!-- BARRA FIJA ABAJO PARA AGREGAR -->
@@ -703,12 +497,8 @@
       <button class="pos-btn" data-pos="indiferente" onclick="seleccionarPos(this)">⚡ Ambos</button>
     </div>
     <div class="add-bar-row">
-      <input type="text" id="inputNombre" placeholder="Nombre..." maxlength="15" autocomplete="off">
+      <input type="text" id="inputNombre" placeholder="Nombre del jugador" maxlength="24" autocomplete="off">
       <button class="btn-add-inline" onclick="agregarJugador()">+</button>
-      <button class="btn-sortear-inline" onclick="abrirModalModo()">🎲</button>
-    </div>
-    <div class="add-bar-limpiar">
-      <button class="btn-limpiar" onclick="limpiarTodo()">Limpiar lista</button>
     </div>
   </div>
 </div>
@@ -735,42 +525,6 @@
   <button class="modal-cancelar" onclick="cerrarModalModo()">Cancelar</button>
 </div>
 
-
-<!-- ══ PANEL MANUAL OCULTO ══ -->
-<div id="panelManual">
-  <div class="pm-header">
-    <div class="pm-titulo">🔒 Modo Manual</div>
-    <button class="pm-cerrar" onclick="cerrarPanelManual()">×</button>
-  </div>
-  <div class="pm-body">
-    <div class="pm-instruccion">Agregá solo las parejas que querés forzar</div>
-    <div class="pm-parejas" id="pmParejas"></div>
-  </div>
-  <div class="pm-body" style="border-top: 1px solid rgba(255,71,87,0.2); margin-top: 0; padding-top: 14px;">
-    <div class="pm-instruccion" style="color: rgba(255,71,87,0.8);">🚫 Estos NO van juntos</div>
-    <div class="pm-parejas" id="pmProhibidas"></div>
-  </div>
-  <div class="pm-footer">
-    <button class="pm-agregar-pareja" onclick="agregarParejaManual()">+ Pareja forzada</button>
-    <button class="pm-agregar-pareja" onclick="agregarProhibida()" style="border-color: rgba(255,71,87,0.4); color: #ff4757;">🚫 Agregar prohibida</button>
-    <button class="pm-sortear" onclick="confirmarManual()">✅ Guardar y volver</button>
-  </div>
-</div>
-
-<!-- ══ MODAL EDITAR JUGADOR ══ -->
-<div id="modalEditar" onclick="cerrarEditar(event)">
-  <div class="edit-sheet">
-    <div class="edit-titulo">Editar jugador</div>
-    <input type="text" class="edit-input" id="editNombre" maxlength="15" autocomplete="off">
-    <div class="edit-pos-selector">
-      <button class="pos-btn active-drive" data-pos="drive" onclick="seleccionarPosEdit(this)">🎯 Drive</button>
-      <button class="pos-btn" data-pos="reves" onclick="seleccionarPosEdit(this)">🔄 Revés</button>
-      <button class="pos-btn" data-pos="indiferente" onclick="seleccionarPosEdit(this)">⚡ Ambos</button>
-    </div>
-    <button class="edit-btn-ok" onclick="guardarEdicion()">✅ Guardar</button>
-    <button class="edit-btn-cancel" onclick="cerrarEditar()">Cancelar</button>
-  </div>
-</div>
 <!-- ══ PANTALLA SORTEO ══ -->
 <div id="pantallaSorteo">
   <div class="sorteo-feed">
@@ -792,24 +546,19 @@ let jugadores = [];
 let posSeleccionada = 'drive';
 let modoSorteo = 'libre';
 let parejasFinales = [];
-let parejasForzadas = []; // guardadas desde el panel oculto
-let parejasProhibidas = []; // estos NO van juntos
 let activeIntervals = [];
 
 function init() {
   const saved = localStorage.getItem(STORAGE_KEY);
   if (saved) { try { jugadores = JSON.parse(saved); } catch(e) { jugadores = []; } }
   renderJugadores();
-  cargarForzadas();
-  cargarProhibidas();
   const inp = document.getElementById('inputNombre');
   inp.addEventListener('keydown', e => { if (e.key === 'Enter') agregarJugador(); });
   inp.addEventListener('input', e => { e.target.value = e.target.value.toUpperCase(); });
 }
 
 function seleccionarPos(btn) {
-  const barra = document.querySelector('.add-bar-pos');
-  if (barra) barra.querySelectorAll('.pos-btn').forEach(b => b.className = 'pos-btn');
+  document.querySelectorAll('.pos-btn').forEach(b => b.className = 'pos-btn');
   posSeleccionada = btn.dataset.pos;
   btn.classList.add('active-' + posSeleccionada);
 }
@@ -818,52 +567,29 @@ function agregarJugador() {
   const nombre = input.value.trim().toUpperCase();
   if (!nombre) { input.focus(); return; }
   jugadores.push({ id: Date.now(), nombre, pos: posSeleccionada });
-  guardar();
-  renderJugadores();
-  input.value = '';
-  input.focus();
-  ocultarError();
+  guardar(); renderJugadores();
+  input.value = ''; input.focus(); ocultarError();
 }
 function eliminarJugador(id) {
   jugadores = jugadores.filter(j => j.id !== id);
   guardar(); renderJugadores();
 }
-function guardar() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(jugadores));
-}
-function guardarForzadas() {
-  localStorage.setItem('padel_forzadas_v1', JSON.stringify(parejasForzadas));
-}
-function cargarForzadas() {
-  try {
-    const saved = localStorage.getItem('padel_forzadas_v1');
-    if (saved) parejasForzadas = JSON.parse(saved);
-  } catch(e) { parejasForzadas = []; }
-}
-function guardarProhibidas() {
-  localStorage.setItem('padel_prohibidas_v1', JSON.stringify(parejasProhibidas));
-}
-function cargarProhibidas() {
-  try {
-    const saved = localStorage.getItem('padel_prohibidas_v1');
-    if (saved) parejasProhibidas = JSON.parse(saved);
-  } catch(e) { parejasProhibidas = []; }
-}
+function guardar() { localStorage.setItem(STORAGE_KEY, JSON.stringify(jugadores)); }
 function renderJugadores() {
   const lista = document.getElementById('listaJugadores');
   const badge = document.getElementById('countBadge');
   badge.textContent = jugadores.length;
-  badge.className = 'count-badge' + (jugadores.length > 0 && jugadores.length % 2 !== 0 ? ' impar' : '');
+  badge.className = 'count-badge' + (jugadores.length > 0 && jugadores.length % 2 === 0 ? ' ok' : '');
   if (jugadores.length === 0) {
     lista.innerHTML = '<div class="empty-state">Todavía no hay jugadores.<br>Agregá los del día arriba.</div>';
     return;
   }
   lista.innerHTML = jugadores.map(j => `
-    <div class="jugador-item">
+    <div class="jugador-item" onclick="abrirEditar(${j.id})" style="cursor:pointer;">
       <div class="pos-dot ${j.pos}"></div>
-      <div class="jugador-nombre" onclick="abrirEditar(${j.id})" style="cursor:pointer;">${h(j.nombre)}</div>
-      <span class="pos-label ${j.pos}" onclick="abrirEditar(${j.id})" style="cursor:pointer;">${lp(j.pos)}</span>
-      <button class="btn-del" onclick="eliminarJugador(${j.id})">×</button>
+      <div class="jugador-nombre">${h(j.nombre)}</div>
+      <span class="pos-label ${j.pos}">${lp(j.pos)}</span>
+      <button class="btn-del" onclick="event.stopPropagation();eliminarJugador(${j.id})">×</button>
     </div>
   `).join('');
 }
@@ -894,29 +620,19 @@ function sortear() {
   if (jugadores.length < 2) { mostrarError('Necesitás al menos 2 jugadores.'); return; }
   if (jugadores.length % 2 !== 0) { mostrarError(`Tenés ${jugadores.length} jugadores. Necesitás un número par.`); return; }
 
-  // IDs ya forzados
-  const idsForzados = new Set(parejasForzadas.flatMap(p => [p[0].id, p[1].id]));
-  const libres = jugadores.filter(j => !idsForzados.has(j.id));
-
-  let parejasLibres;
+  let parejas;
   if (modoSorteo === 'libre') {
-    parejasLibres = sorteoLibreConProhibidas(libres);
+    parejas = sorteoLibre();
   } else {
-    const tmpJugadores = jugadores;
-    jugadores = libres;
-    const r = sorteoPorPosicionConProhibidas();
-    jugadores = tmpJugadores;
+    const r = sorteoPorPosicion();
     if (!r.ok) { mostrarError(r.error); return; }
-    parejasLibres = r.parejas;
+    parejas = r.parejas;
   }
-
-  // Mezclar forzadas + libres aleatoriamente
-  const todas = shuffle([...parejasForzadas, ...parejasLibres]);
-  parejasFinales = todas;
+  parejasFinales = parejas;
 
   document.getElementById('feedCards').innerHTML = '';
   document.getElementById('feedFooter').classList.remove('show');
-  document.getElementById('feedDots').innerHTML = parejasFinales.map((_, i) => `<div class="feed-dot" id="fdot${i}"></div>`).join('');
+  document.getElementById('feedDots').innerHTML = parejas.map((_, i) => `<div class="feed-dot" id="fdot${i}"></div>`).join('');
 
   document.getElementById('pantallaInicio').style.display = 'none';
   document.getElementById('pantallaSorteo').classList.add('show');
@@ -927,44 +643,6 @@ function sortear() {
 
 function sorteoLibre() {
   const s = shuffle([...jugadores]);
-  const p = [];
-  for (let i = 0; i < s.length; i += 2) p.push([s[i], s[i+1]]);
-  return p;
-}
-
-function esProhibida(jA, jB) {
-  return parejasProhibidas.some(p =>
-    (p[0].id === jA.id && p[1].id === jB.id) ||
-    (p[0].id === jB.id && p[1].id === jA.id)
-  );
-}
-
-function sorteoPorPosicionConProhibidas() {
-  // Hasta 30 intentos para evitar prohibidas
-  for (let intento = 0; intento < 30; intento++) {
-    const r = sorteoPorPosicion();
-    if (!r.ok) return r;
-    const tieneProhibida = r.parejas.some(p => esProhibida(p[0], p[1]));
-    if (!tieneProhibida) return r;
-  }
-  // Si no encuentra solución sin prohibidas, usa lo que tenga
-  return sorteoPorPosicion();
-}
-
-function sorteoLibreConProhibidas(lista) {
-  // Intentar hasta 30 veces encontrar un sorteo sin parejas prohibidas
-  for (let intento = 0; intento < 30; intento++) {
-    const s = shuffle([...lista]);
-    const p = [];
-    let ok = true;
-    for (let i = 0; i < s.length; i += 2) {
-      if (esProhibida(s[i], s[i+1])) { ok = false; break; }
-      p.push([s[i], s[i+1]]);
-    }
-    if (ok) return p;
-  }
-  // Si no encuentra solución, sortea igual (caso extremo)
-  const s = shuffle([...lista]);
   const p = [];
   for (let i = 0; i < s.length; i += 2) p.push([s[i], s[i+1]]);
   return p;
@@ -1138,7 +816,7 @@ function volverInicio() {
 function limpiarTodo() {
   if (!confirm('¿LIMPIAR TODA LA LISTA?')) return;
   stopIntervals();
-  jugadores = []; parejasForzadas = []; parejasProhibidas = []; guardar(); guardarForzadas(); guardarProhibidas(); renderJugadores();
+  jugadores = []; guardar(); renderJugadores();
 }
 
 // ── Helpers ──
@@ -1154,283 +832,57 @@ function shuffle(arr) {
 }
 function h(str) { return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
+init();
 
-// ── EDITAR JUGADOR ──
 let editandoId = null;
-let posEditSeleccionada = 'drive';
+let editPosSeleccionada = 'drive';
 
 function abrirEditar(id) {
   const j = jugadores.find(x => x.id === id);
   if (!j) return;
   editandoId = id;
-  posEditSeleccionada = j.pos;
+  editPosSeleccionada = j.pos;
   document.getElementById('editNombre').value = j.nombre;
-  // Seleccionar posición
-  document.querySelectorAll('.edit-pos-selector .pos-btn').forEach(b => {
-    b.className = 'pos-btn';
-    if (b.dataset.pos === j.pos) b.classList.add('active-' + j.pos);
+  document.querySelectorAll('.edit-pos-btn').forEach(b => {
+    b.className = 'edit-pos-btn';
+    if (b.dataset.pos === j.pos) b.classList.add('sel-' + j.pos);
   });
-  document.getElementById('modalEditar').classList.add('show');
-  setTimeout(() => const inp2 = document.getElementById('editNombre');
-    inp2.focus();
-    inp2.onkeydown = e => { if(e.key==='Enter') guardarEdicion(); };}, 100);
+  document.getElementById('modalEditar').style.display = 'flex';
 }
 
-function cerrarEditar(e) {
-  if (!e || e.target === document.getElementById('modalEditar')) {
-    document.getElementById('modalEditar').classList.remove('show');
-    editandoId = null;
-  }
+function cerrarEditar() {
+  document.getElementById('modalEditar').style.display = 'none';
+  editandoId = null;
 }
 
-function seleccionarPosEdit(btn) {
-  document.querySelectorAll('.edit-pos-selector .pos-btn').forEach(b => b.className = 'pos-btn');
-  posEditSeleccionada = btn.dataset.pos;
-  btn.classList.add('active-' + posEditSeleccionada);
+function editPos(btn) {
+  document.querySelectorAll('.edit-pos-btn').forEach(b => b.className = 'edit-pos-btn');
+  editPosSeleccionada = btn.dataset.pos;
+  btn.classList.add('sel-' + editPosSeleccionada);
 }
 
 function guardarEdicion() {
   const nombre = document.getElementById('editNombre').value.trim().toUpperCase();
-  if (!nombre) return;
-  jugadores = jugadores.map(j => j.id === editandoId ? { ...j, nombre, pos: posEditSeleccionada } : j);
+  if (!nombre || !editandoId) return;
+  jugadores = jugadores.map(j => j.id === editandoId ? {...j, nombre, pos: editPosSeleccionada} : j);
   guardar();
   renderJugadores();
-  document.getElementById('modalEditar').classList.remove('show');
-  editandoId = null;
+  cerrarEditar();
 }
-
-init();
-initLogoTap();
-
-// ── PANEL MANUAL: 3 toques en "JUGADORES" ──
-let zonaTaps = 0;
-let zonaTimer = null;
-
-function initLogoTap() {
-  // Activar en el número Y en la palabra JUGADORES del header
-  ['countBadge', 'jugadoresLabel'].forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.addEventListener('click', () => {
-      zonaTaps++;
-      clearTimeout(zonaTimer);
-      if (zonaTaps >= 3) {
-        zonaTaps = 0;
-        abrirPanelManual();
-        return;
-      }
-      zonaTimer = setTimeout(() => { zonaTaps = 0; }, 1500);
-    });
-  });
-}
-
-function tapZonaOculta() {
-  // ya no se usa
-}
-
-function abrirPanelManual() {
-  if (jugadores.length < 2) {
-    mostrarError('Necesitás al menos 2 jugadores.');
-    return;
-  }
-  if (jugadores.length % 2 !== 0) {
-    mostrarError('Necesitás un número par de jugadores.');
-    return;
-  }
-
-  renderPanelManual();
-  document.getElementById('panelManual').classList.add('show');
-}
-
-function cerrarPanelManual() {
-  document.getElementById('panelManual').classList.remove('show');
-}
-
-function renderPanelManual() {
-  // Forzadas
-  const container = document.getElementById('pmParejas');
-  container.innerHTML = '';
-  parejasForzadas.forEach((par, i) => {
-    const fila = crearFilaPareja(i);
-    container.appendChild(fila);
-    setTimeout(() => {
-      const selA = document.getElementById(`pmA${i}`);
-      const selB = document.getElementById(`pmB${i}`);
-      if (selA) selA.value = par[0].id;
-      if (selB) selB.value = par[1].id;
-    }, 0);
-  });
-  // Prohibidas
-  const contProh = document.getElementById('pmProhibidas');
-  contProh.innerHTML = '';
-  parejasProhibidas.forEach((par, i) => {
-    const fila = crearFilaProhibida(i);
-    contProh.appendChild(fila);
-    setTimeout(() => {
-      const selA = document.getElementById(`ppA${i}`);
-      const selB = document.getElementById(`ppB${i}`);
-      if (selA) selA.value = par[0].id;
-      if (selB) selB.value = par[1].id;
-    }, 0);
-  });
-}
-
-function crearFilaPareja(idx) {
-  const div = document.createElement('div');
-  div.className = 'pm-pareja';
-  div.id = `pmPareja${idx}`;
-
-  const opts = '<option value="">— Elegir —</option>' +
-    jugadores.map(j => `<option value="${j.id}">${h(j.nombre)} (${lp(j.pos)})</option>`).join('');
-
-  div.innerHTML = `
-    <div class="pm-pareja-label" style="display:flex;justify-content:space-between;align-items:center;">
-      <span>Pareja forzada ${idx + 1}</span>
-      <button onclick="eliminarParejaManual(this)" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:18px;cursor:pointer;padding:0 4px;">×</button>
-    </div>
-    <div class="pm-pareja-slots">
-      <select class="pm-select" id="pmA${idx}">${opts}</select>
-      <div class="pm-plus">+</div>
-      <select class="pm-select" id="pmB${idx}">${opts}</select>
-    </div>
-  `;
-  return div;
-}
-
-function eliminarParejaManual(btn) {
-  btn.closest('.pm-pareja').remove();
-  // Renumerar
-  document.querySelectorAll('.pm-pareja').forEach((el, i) => {
-    el.id = `pmPareja${i}`;
-    el.querySelector('select:first-of-type').id = `pmA${i}`;
-    el.querySelector('select:last-of-type').id = `pmB${i}`;
-    el.querySelector('.pm-pareja-label span').textContent = `Pareja forzada ${i + 1}`;
-  });
-  // Guardar el estado actual sin la eliminada
-  _sincronizarYGuardarForzadas();
-}
-function _sincronizarYGuardarForzadas() {
-  const filas = document.querySelectorAll('.pm-pareja');
-  const nuevas = [];
-  filas.forEach(fila => {
-    const idA = parseInt(fila.querySelector('select:first-of-type')?.value);
-    const idB = parseInt(fila.querySelector('select:last-of-type')?.value);
-    if (idA && idB && idA !== idB) {
-      const jA = jugadores.find(j => j.id === idA);
-      const jB = jugadores.find(j => j.id === idB);
-      if (jA && jB) nuevas.push([jA, jB]);
-    }
-  });
-  parejasForzadas = nuevas;
-  guardarForzadas();
-}
-
-function agregarParejaManual() {
-  const n = document.getElementById('pmParejas').children.length;
-  document.getElementById('pmParejas').appendChild(crearFilaPareja(n));
-}
-
-function crearFilaProhibida(idx) {
-  const div = document.createElement('div');
-  div.className = 'pm-pareja';
-  div.id = `ppPareja${idx}`;
-  div.style.borderColor = 'rgba(255,71,87,0.3)';
-
-  const opts = '<option value="">— Elegir —</option>' +
-    jugadores.map(j => `<option value="${j.id}">${h(j.nombre)}</option>`).join('');
-
-  div.innerHTML = `
-    <div class="pm-pareja-label" style="display:flex;justify-content:space-between;align-items:center;color:#ff4757;">
-      <span>🚫 Prohibida ${idx + 1}</span>
-      <button onclick="eliminarProhibida(this)" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:18px;cursor:pointer;padding:0 4px;">×</button>
-    </div>
-    <div class="pm-pareja-slots">
-      <select class="pm-select" id="ppA${idx}" style="border-color:rgba(255,71,87,0.3);">${opts}</select>
-      <div class="pm-plus" style="color:#ff4757;">≠</div>
-      <select class="pm-select" id="ppB${idx}" style="border-color:rgba(255,71,87,0.3);">${opts}</select>
-    </div>
-  `;
-  return div;
-}
-
-function agregarProhibida() {
-  const n = document.getElementById('pmProhibidas').children.length;
-  document.getElementById('pmProhibidas').appendChild(crearFilaProhibida(n));
-}
-
-function eliminarProhibida(btn) {
-  btn.closest('.pm-pareja').remove();
-  document.querySelectorAll('#pmProhibidas .pm-pareja').forEach((el, i) => {
-    el.id = `ppPareja${i}`;
-    el.querySelector('select:first-of-type').id = `ppA${i}`;
-    el.querySelector('select:last-of-type').id = `ppB${i}`;
-    el.querySelector('.pm-pareja-label span').textContent = `🚫 Prohibida ${i + 1}`;
-  });
-  _sincronizarYGuardarProhibidas();
-}
-
-function _sincronizarYGuardarProhibidas() {
-  const filas = document.querySelectorAll('#pmProhibidas .pm-pareja');
-  const nuevas = [];
-  filas.forEach(fila => {
-    const idA = parseInt(fila.querySelector('select:first-of-type')?.value);
-    const idB = parseInt(fila.querySelector('select:last-of-type')?.value);
-    if (idA && idB && idA !== idB) {
-      const jA = jugadores.find(j => j.id === idA);
-      const jB = jugadores.find(j => j.id === idB);
-      if (jA && jB) nuevas.push([jA, jB]);
-    }
-  });
-  parejasProhibidas = nuevas;
-  guardarProhibidas();
-}
-
-function confirmarManual() {
-  const filas = document.querySelectorAll('#pmParejas .pm-pareja');
-  const parejas = [];
-  const usados = new Set();
-  let error = false;
-
-  // 1. Procesar parejas forzadas
-  filas.forEach((fila, i) => {
-    if (error) return;
-    const idA = parseInt(fila.querySelector('select:first-of-type')?.value);
-    const idB = parseInt(fila.querySelector('select:last-of-type')?.value);
-
-    if (!idA || !idB) {
-      alert(`PAREJA FORZADA ${i + 1}: ELEGÍ LOS DOS JUGADORES.`);
-      error = true; return;
-    }
-    if (idA === idB) {
-      alert(`PAREJA FORZADA ${i + 1}: LOS DOS JUGADORES DEBEN SER DISTINTOS.`);
-      error = true; return;
-    }
-    if (usados.has(idA) || usados.has(idB)) {
-      alert(`UN JUGADOR ESTÁ REPETIDO EN VARIAS PAREJAS FORZADAS.`);
-      error = true; return;
-    }
-    usados.add(idA); usados.add(idB);
-    parejas.push([jugadores.find(j => j.id === idA), jugadores.find(j => j.id === idB)]);
-  });
-
-  if (error) return;
-
-  // Guardar SOLO las parejas forzadas que cargó el usuario
-  parejasForzadas = parejas;
-  guardarForzadas();
-
-  // Guardar prohibidas
-  _sincronizarYGuardarProhibidas();
-
-  cerrarPanelManual();
-
-  // Feedback visual sutil: badge naranja en el logo
-  const logo = document.querySelector('.logo');
-  logo.style.outline = '2px solid var(--naranja)';
-  logo.style.borderRadius = '8px';
-  setTimeout(() => { logo.style.outline = 'none'; }, 2000);
-}
-
 </script>
+
+<div id="modalEditar">
+  <div class="edit-sheet">
+    <div class="edit-titulo">Editar jugador</div>
+    <input type="text" class="edit-input" id="editNombre" maxlength="15" autocomplete="off">
+    <div class="edit-pos-row">
+      <button class="edit-pos-btn sel-drive" data-pos="drive"   onclick="editPos(this)">🎯 Drive</button>
+      <button class="edit-pos-btn"           data-pos="reves"   onclick="editPos(this)">🔄 Revés</button>
+      <button class="edit-pos-btn"           data-pos="indiferente" onclick="editPos(this)">⚡ Ambos</button>
+    </div>
+    <button class="edit-btn-ok"     onclick="guardarEdicion()">✅ Guardar</button>
+    <button class="edit-btn-cancel" onclick="cerrarEditar()">Cancelar</button>
+  </div>
+</div>
 </body>
 </html>
