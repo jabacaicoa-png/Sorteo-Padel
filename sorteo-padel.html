@@ -808,7 +808,7 @@ function init() {
 }
 
 function seleccionarPos(btn) {
-  document.querySelectorAll('.pos-btn').forEach(b => b.className = 'pos-btn');
+  document.querySelectorAll('.add-bar-pos .pos-btn').forEach(b => b.className = 'pos-btn');
   posSeleccionada = btn.dataset.pos;
   btn.classList.add('active-' + posSeleccionada);
 }
